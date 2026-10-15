@@ -1,0 +1,31 @@
+import { getSDK } from '../platform/hermes-sdk';
+
+export interface Health {
+  status: 'ok';
+  plugin: 'hermes-usage-manager';
+  version: '0.3.0';
+  milestone: 'M2';
+  data_source: 'mock' | 'live';
+  capabilities: {
+    storage: 'ready' | 'unavailable';
+    business_api: boolean;
+    collection: 'unavailable';
+    hermes_runtime: 'unverified';
+  };
+}
+
+export async function getHealth(signal: AbortSignal): Promise<Health> {
+  const payload = await getSDK().fetchJSON('/api/plugins/hermes-usage-manager/health', { signal });
+  if (!payload || typeof payload !== 'object') throw new Error('Health 响应格式不兼容');
+  const health = payload as Partial<Health>;
+  if (health.status !== 'ok' || health.plugin !== 'hermes-usage-manager'
+    || health.version !== '0.3.0' || health.milestone !== 'M2'
+    || !['mock', 'live'].includes(health.data_source ?? '')
+    || !['ready', 'unavailable'].includes(health.capabilities?.storage ?? '')
+    || typeof health.capabilities?.business_api !== 'boolean'
+    || health.capabilities?.collection !== 'unavailable'
+    || health.capabilities?.hermes_runtime !== 'unverified') {
+    throw new Error('Health 响应格式不兼容');
+  }
+  return health as Health;
+}

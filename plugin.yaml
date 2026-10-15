@@ -1,0 +1,7 @@
+name: hermes-usage-manager
+version: 0.3.0
+manifest_version: 2
+api_version: 1
+description: Hermes Usage Manager M2 SQLite Dashboard and native Agent Hooks plugin
+provides_hooks:
+  - pre_llm_call
