@@ -2,6 +2,15 @@
 
 ## 0.6.0 用户授权的独立入口
 
+### 依赖扫描记录（2026-10-16）
+
+推送时GitHub提示3项moderate；随后本机pnpm audit --json返回1项moderate/1项high，来源/更新时点/统计口径不同，不将两者混算，也不宣称零漏洞。
+
+- [ECharts GHSA-fgmj-fm8m-jvvx](https://github.com/advisories/GHSA-fgmj-fm8m-jvvx)：当前6.0.0落在受影响范围，6.1.0有补丁。公告针对Lines系列默认HTML tooltip；代码仅注册BarChart/LineChart/PieChart（Line不等于Lines），现有tooltip均richText。根据代码审查推断，当前配置没有使用公告触发组合，不等同于完整无漏洞证明。此轮未扩大依赖升级范围，后续升级需双入口完整回归，新增图表不得盲目启用Lines/HTML formatter。
+- [braces GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)：通过typescript-eslint/fast-glob/micromatch进入开发工具链；公告当前没有修复版本。该包不在原生或独立构建的运行时白名单、也不在交付zip，不在服务器运行Node的路径中；CI/开发环境仍应避免处理不可信glob输入。没有通过强制override或隐藏audit掩盖告警。
+
+以上为当前扫描和触发条件审查，不是渗透测试或生产部署批准；保持隔离测试和既有认证边界。
+
 用户明确改为支持独立端口仅显示平台，故原“只允许嵌入Dashboard”约束不再适用于新入口；原生IIFE仍无第二份React，独立构建有自己的React和许可，业务router/SQLite/Hooks不复制实现。独立服务是新的受保护FastAPI应用，不信任Dashboard Cookie、角色header、浏览器自报身份或X-Forwarded-*；自己的管理员认证只覆盖该应用，不修改原生get_principal实现。
 
 无默认密码，交互init保存scrypt hash及盐、拒绝覆盖，配置在插件外；Unix权限检查，Windows另核对ACL。独立管理员拥有当前库管理员权限，非SSO/员工多角色系统。服务端有界会话/每IP登录限速、重启失效/退出撤销，凭据和会话不写localStorage或输出日志；验证错误不回显输入密码。Cookie HttpOnly/Strict，HTTPS Secure；固定Origin与CSRF保护写入，TrustedHost校验、CSP和no-store。Cookie按主机而非端口隔离，同一主机上的其他HTTP服务必须可信；多实例/不可信站点应使用不同域名。

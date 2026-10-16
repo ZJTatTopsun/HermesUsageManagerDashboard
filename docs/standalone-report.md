@@ -29,8 +29,10 @@ backend/standalone.py、standalone.py、standalone/dist、frontend/src/standalon
 
 ## 风险/需要确认
 
+GitHub推送后提示依赖告警；本机audit返回ECharts中风险与开发链braces高风险，触发条件/运行时范围见security-review.md。没有无依据宣布告警全部清零，也未扩大到无关依赖升级。
+
 独立入口目前是单管理员，不是SSO/多租户角色系统；凭据与unit不在ops代码/DB快照中，需另行私密备份。Cookie按主机而非端口隔离，同主机其他服务须可信；生产应使用专用HTTPS域名/代理与外层限流。HTTP仅显式隔离测试；不默认授权正文。升级/卸载/恢复前须停止独立服务及所有既有写入者，不能只停9119/Gateway。
 
 ## 下一步建议
 
-按用户已有提交/推送授权发布master及既有v0.5.1标签；不创建未经授权的v0.6.0标签、不部署远端。当前zip安装的0.5.1机器应先备份再安全升级，不假定它是可直接git pull的安装。首次设置密码并前台验证独立入口后，再选择用户systemd常驻。具体步骤见standalone.md。
+按用户授权已将功能提交df4e49c推送master，并同步既有v0.5.1标签（仍指向57cf045）。未创建未经授权的v0.6.0标签、未部署远端。当前zip安装的0.5.1机器应先备份再安全升级，不假定它是可直接git pull的安装。首次设置密码并前台验证独立入口后，再选择用户systemd常驻。具体步骤见standalone.md。
