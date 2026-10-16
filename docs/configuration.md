@@ -1,5 +1,7 @@
 # 运行配置与安全边界
 
+0.6.0新增可选独立端口入口，见standalone.md。独立入口自己的管理员登录不依赖USAGE_MANAGER_TRUST_DASHBOARD_ADMIN；此开关仍只属于原生Dashboard身份桥接。Hooks、数据库和正文授权设置共用，独立服务的systemd环境需单独配置，不继承另一个终端的export。升级/卸载/恢复前还必须停止hermes-usage-manager.service或前台serve进程。
+
 ## 基础配置
 
 在启动Dashboard和会话的各终端分别设置；新终端不会继承其他终端的export，进程启动后修改父终端也不会更新运行进程。不要把下面示例自动覆盖到现有服务环境；升级保持原DB和Instance ID。

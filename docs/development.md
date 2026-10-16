@@ -1,4 +1,6 @@
-# M4 本地开发（0.5.1 候选）
+# 本地开发（0.6.0 双入口）
+
+当前支持原生Dashboard和独立9120入口。独立入口由用户明确授权新增，不属于Mock回退；其登录/部署见standalone.md。下文M3/M4的旧状态为历史，以compatibility.md最新记录为准。构建顺序为先build:plugin再build:standalone，两份指纹均需存在才可打包。
 
 M3已按用户要求提交61b7663；0.4.4目标实机基础验收报告见m3-final-acceptance.md。当前0.5.1添加交付校验与运维工具，仍声明五个基础Hook；目标0.5.1真实安装/升级/回滚及全新服务器未验收，不沿用0.4.4结果冒充通过。
 
@@ -18,9 +20,11 @@ pnpm install --frozen-lockfile
 pnpm run typecheck
 pnpm run lint
 pnpm run build:plugin
+pnpm run build:standalone
 pnpm test
 pnpm exec playwright install chromium
 pnpm run test:e2e
+pnpm run test:standalone
 pnpm run dev
 ```
 
@@ -48,7 +52,7 @@ python scripts/package_release.py
 
 ## 原生运行
 
-候选包build/hermes-usage-manager-0.5.1.zip包含原生声明、Dashboard router、backend与5步SQL迁移、IIFE/CSS/字体/许可和stdlib运维工具，无Mock或React/ReactDOM运行时。另生成.sha256和-ops.py。运行不需要Node，安装测试按deployment.md；旧package_m3.py仅为当前严格打包器兼容入口，不再生成旧M3版本包。
+候选包build/hermes-usage-manager-0.6.0.zip包含原生声明、Dashboard router、backend与5步SQL迁移、原生IIFE/CSS/字体/许可、独立standalone.py和standalone/dist、stdlib运维工具，无Mock。原生IIFE无React/ReactDOM，独立构建包含自己的React运行时及许可，两者不混用。另生成.sha256和-ops.py。运行不需要Node，安装测试按standalone.md；旧package_m3.py仅为当前严格打包器兼容入口，不再生成旧M3版本包。
 
 真实 DB 使用 `USAGE_MANAGER_DB_PATH`，否则尝试 Hermes 官方源码 helper。它与开发专用 HUM_MOCK_DB_PATH 不同。默认业务认证拒绝访问；受控测试才设置 `USAGE_MANAGER_TRUST_DASHBOARD_ADMIN=1`。缺少宿主内部认证函数时503，不降级。Hermes 进程环境须具备 FastAPI 与 tzdata；本仓库 `.venv` 不等于远端 Hermes 解释器。
 

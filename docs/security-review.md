@@ -1,5 +1,13 @@
 # M4 安全复核（本地，非生产批准）
 
+## 0.6.0 用户授权的独立入口
+
+用户明确改为支持独立端口仅显示平台，故原“只允许嵌入Dashboard”约束不再适用于新入口；原生IIFE仍无第二份React，独立构建有自己的React和许可，业务router/SQLite/Hooks不复制实现。独立服务是新的受保护FastAPI应用，不信任Dashboard Cookie、角色header、浏览器自报身份或X-Forwarded-*；自己的管理员认证只覆盖该应用，不修改原生get_principal实现。
+
+无默认密码，交互init保存scrypt hash及盐、拒绝覆盖，配置在插件外；Unix权限检查，Windows另核对ACL。独立管理员拥有当前库管理员权限，非SSO/员工多角色系统。服务端有界会话/每IP登录限速、重启失效/退出撤销，凭据和会话不写localStorage或输出日志；验证错误不回显输入密码。Cookie HttpOnly/Strict，HTTPS Secure；固定Origin与CSRF保护写入，TrustedHost校验、CSP和no-store。Cookie按主机而非端口隔离，同一主机上的其他HTTP服务必须可信；多实例/不可信站点应使用不同域名。
+
+默认loopback，不自动监听公网/写Gateway配置。远程HTTP必须显式allow-http，仅供隔离测试；生产使用HTTPS反向代理和来源限制，外层另设请求体/连接限速。独立认证文件/运行unit创建不自动启停服务、提权或开放防火墙。需将独立服务加入停写/备份/升级清单。Linux unit仅本地受控生成测试，尚未验证目标systemd启动；0.6.0不能沿用0.5.1实机验收。以下M4复核为原生入口历史基线，不构成新服务生产批准。
+
 ## 保持的边界
 
 - 原生Web Dashboard + Agent Hooks，不引入Desktop SDK、不改Hermes核心、不替换宿主React、不建立独立生产站点。

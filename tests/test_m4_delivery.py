@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture(scope='module')
 def artifact():
     subprocess.run([sys.executable, str(ROOT / 'scripts/package_release.py')], cwd=ROOT, check=True, capture_output=True)
-    path = ROOT / 'build/hermes-usage-manager-0.5.1.zip'
+    path = ROOT / 'build/hermes-usage-manager-0.6.0.zip'
     return path, manage.digest(path)
 
 
@@ -42,7 +42,7 @@ def test_release_is_reproducible_and_contains_no_development_runtime(artifact):
     subprocess.run([sys.executable, str(ROOT / 'scripts/package_release.py')], check=True, capture_output=True)
     assert manage.digest(path) == before
     result = manage.verified(path, before)
-    assert result['version'] == '0.5.1'
+    assert result['version'] == '0.6.0'
     assert len(result['source_revision']) == 40
     assert isinstance(result['source_dirty'], bool)
     assert 'ops/manage.py' in result['files']
@@ -240,7 +240,7 @@ def test_inspect_db_is_read_only_and_returns_only_aggregate_metadata(tmp_path):
     assert not missing.exists()
 
 
-@pytest.mark.parametrize('dirty,tags', [(True, ['v0.5.1']), (False, [])])
+@pytest.mark.parametrize('dirty,tags', [(True, ['v0.6.0']), (False, [])])
 def test_formal_publish_refuses_uncommitted_or_untagged_source_without_replacing_candidate(artifact, monkeypatch, dirty, tags):
     path, before = artifact
     def git_output(command, **options):
@@ -253,14 +253,14 @@ def test_formal_publish_refuses_uncommitted_or_untagged_source_without_replacing
 
 def test_formal_publish_records_clean_matching_tag_in_controlled_fixture(tmp_path, monkeypatch):
     def git_output(command, **options):
-        return {'rev-parse': 'a' * 40, 'status': '', 'tag': 'v0.5.1\n'}[command[1]]
+        return {'rev-parse': 'a' * 40, 'status': '', 'tag': 'v0.6.0\n'}[command[1]]
     monkeypatch.setattr(package_release, 'ROOT', tmp_path)
-    monkeypatch.setattr(package_release, 'collect', lambda root: ('0.5.1', {'ops/manage.py': b'fixture'}))
+    monkeypatch.setattr(package_release, 'collect', lambda root: ('0.6.0', {'ops/manage.py': b'fixture'}))
     monkeypatch.setattr(package_release.subprocess, 'check_output', git_output)
     package_release.main(['--require-tag'])
-    with ZipFile(tmp_path / 'build/hermes-usage-manager-0.5.1.zip') as archive:
+    with ZipFile(tmp_path / 'build/hermes-usage-manager-0.6.0.zip') as archive:
         release = json.loads(archive.read('hermes-usage-manager/release.json'))
-    assert release['source_tag'] == 'v0.5.1'
+    assert release['source_tag'] == 'v0.6.0'
     assert release['source_dirty'] is False
     assert release['release_status'] == 'tagged'
 
@@ -289,7 +289,7 @@ def test_operator_cli_snapshot_inspect_and_restore_without_node_or_checkout(arti
     (plugin / 'plugin.yaml').write_text('name: hermes-usage-manager\nversion: 0.4.4\n')
     database = tmp_path / 'usage.sqlite3'
     Store(database)
-    helper = artifact[0].with_name('hermes-usage-manager-0.5.1-ops.py')
+    helper = artifact[0].with_name('hermes-usage-manager-0.6.0-ops.py')
     snapshot = tmp_path / 'snapshot'
     restored = tmp_path / 'restored'
     commands = [
@@ -377,3 +377,12 @@ def test_restore_existing_output_reports_specific_error_code(tmp_path):
     with pytest.raises(manage.OperationError) as error:
         manage.restore(snapshot, existing)
     assert error.value.code == 'OUTPUT_EXISTS'
+
+
+@pytest.mark.parametrize('relative', ['standalone/dist/app.js', 'frontend/src/standalone.tsx', 'frontend/scripts/build-standalone.mjs'])
+def test_standalone_build_inputs_and_outputs_are_checked_before_release(artifact, monkeypatch, relative):
+    original = package_release.checksum
+    changed = (ROOT / relative).read_bytes()
+    monkeypatch.setattr(package_release, 'checksum', lambda data: 'changed' if data == changed else original(data))
+    with pytest.raises(ValueError, match='Build inputs or outputs changed'):
+        package_release.collect(ROOT)

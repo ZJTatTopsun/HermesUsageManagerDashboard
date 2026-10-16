@@ -10,5 +10,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src", "mock", "tests/*.ts", "playwright.config.ts"]
+  "include": ["src", "mock", "tests/*.ts", "standalone-tests", "playwright.config.ts", "playwright.standalone.config.ts"]
 }

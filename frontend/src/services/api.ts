@@ -3,7 +3,7 @@ import { getSDK } from '../platform/hermes-sdk';
 export interface Health {
   status: 'ok';
   plugin: 'hermes-usage-manager';
-  version: '0.5.1';
+  version: '0.6.0';
   milestone: 'M4';
   data_source: 'mock' | 'live';
   capabilities: {
@@ -19,7 +19,7 @@ export async function getHealth(signal: AbortSignal): Promise<Health> {
   if (!payload || typeof payload !== 'object') throw new Error('Health 响应格式不兼容');
   const health = payload as Partial<Health>;
   if (health.status !== 'ok' || health.plugin !== 'hermes-usage-manager'
-    || health.version !== '0.5.1' || health.milestone !== 'M4'
+    || health.version !== '0.6.0' || health.milestone !== 'M4'
     || !['mock', 'live'].includes(health.data_source ?? '')
     || !['ready', 'unavailable'].includes(health.capabilities?.storage ?? '')
     || typeof health.capabilities?.business_api !== 'boolean'

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 独立端口用量管理平台
+
+- 按用户明确调整后的需求新增独立端口入口（默认127.0.0.1:9120），无需打开9119或显示Hermes外壳；继续保留原生Dashboard和五Hook，共用SQLite及同一业务API，无新schema迁移。
+- 原生IIFE继续复用宿主React且禁止打包React/ReactDOM；独立入口另行构建自己的React运行时、样式、本地字体和许可，不使用iframe/Mock或依赖CDN。
+- 新增独立管理员密码初始化（scrypt、私有文件、拒绝覆盖）、8小时服务端会话、登录限速、HttpOnly/Strict Cookie、HTTPS Secure标志、写入Origin/CSRF与Host校验；重启失效、退出撤销，接口验证不回显密码。
+- 新增前台serve和显式生成用户systemd unit的service命令；不自动启动/修改Gateway或防火墙，不默认开放远程HTTP。凭据与数据保留在安装目录之外。
+- 增加独立入口后端、打包和浏览器回归；0.6.0目标Hermes及Linux服务启动仍待实机回传，不将0.5.1验收扩大为新入口通过。原有v0.5.1标签/交付物不改写。
+
 ## 0.5.1 — 快照检查后恢复的库存误拒绝修复
 
 - 修复0.5.0快照继承WAL模式，inspect-db生成sidecar导致严格库存校验拒绝恢复；新备份目标封存DELETE模式，源库保持不变。

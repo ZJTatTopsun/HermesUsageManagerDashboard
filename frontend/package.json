@@ -1,15 +1,17 @@
 {
   "name": "hermes-usage-manager-frontend",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build:plugin": "node scripts/build.mjs",
+    "build:standalone": "node scripts/build-standalone.mjs",
+    "test:standalone": "playwright test --config playwright.standalone.config.ts",
     "build:mock": "node scripts/build-mock.mjs",
     "check:bundle": "node scripts/check-bundle.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src mock tests scripts playwright.config.ts",
+    "lint": "eslint src mock tests standalone-tests scripts playwright.config.ts playwright.standalone.config.ts",
     "test": "node --test tests/bundle.test.mjs",
     "test:e2e": "playwright test"
   },

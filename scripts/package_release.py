@@ -36,14 +36,15 @@ def collect(root):
     for path in ('backend/api.py', 'backend/responses.py', 'frontend/src/services/api.ts'):
         if version not in (root / path).read_text(encoding='utf-8'):
             raise ValueError('Runtime version disagrees')
-    integrity = json.loads((root / 'build/release-inputs.json').read_text(encoding='utf-8'))
-    for category in ('inputs', 'outputs'):
-        if not integrity.get(category):
-            raise ValueError('Missing build integrity inventory')
-        for relative, expected in integrity[category].items():
-            path = (root / 'frontend' / relative).resolve()
-            if not path.is_relative_to(root.resolve()) or checksum(path.read_bytes()) != expected:
-                raise ValueError('Build inputs or outputs changed; rebuild the plugin')
+    for inventory in ('release-inputs.json', 'standalone-inputs.json'):
+        integrity = json.loads((root / 'build' / inventory).read_text(encoding='utf-8'))
+        for category in ('inputs', 'outputs'):
+            if not integrity.get(category):
+                raise ValueError('Missing build integrity inventory')
+            for relative, expected in integrity[category].items():
+                path = (root / 'frontend' / relative).resolve()
+                if not path.is_relative_to(root.resolve()) or checksum(path.read_bytes()) != expected:
+                    raise ValueError('Build inputs or outputs changed; rebuild the plugin')
     metadata = json.loads((root / 'build/plugin-metafile.json').read_text(encoding='utf-8'))
     packages = {'echarts', 'zrender', 'tslib', 'zod'}
     for relative in metadata['inputs']:
@@ -55,14 +56,24 @@ def collect(root):
     javascript = (root / 'dashboard/dist/index.js').read_text(encoding='utf-8')
     if '__HERMES_PLUGIN_SDK__' not in javascript or any(marker in javascript for marker in ('react-dom', 'jsx-runtime', 'createRoot', '__SECRET_INTERNALS')):
         raise ValueError('Missing host SDK or bundled React runtime')
-    roots = ['plugin.yaml', '__init__.py', 'pyproject.toml', 'README.md', 'CHANGELOG.md']
+    standalone = json.loads((root / 'build/standalone-metafile.json').read_text(encoding='utf-8'))
+    standalone_inputs = list(standalone['inputs'])
+    for relative in standalone_inputs:
+        segments = relative.replace('\\', '/').split('/node_modules/')
+        if len(segments) > 1 and segments[-1].split('/')[0] not in packages | {'react', 'react-dom', 'scheduler'}:
+            raise ValueError('Unexpected standalone runtime dependency')
+    if not any('/react-dom/' in path.replace('\\', '/') for path in standalone_inputs) or not any('/react/' in path.replace('\\', '/') for path in standalone_inputs):
+        raise ValueError('Standalone entry must provide its own React runtime')
+    if any(output.get('imports') for path, output in standalone['outputs'].items() if path.endswith('.js')):
+        raise ValueError('Unresolved standalone JavaScript imports')
+    roots = ['plugin.yaml', '__init__.py', 'standalone.py', 'pyproject.toml', 'README.md', 'CHANGELOG.md']
     paths = [root / name for name in roots]
-    for directory in ('dashboard', 'backend', 'docs', 'ops'):
+    for directory in ('dashboard', 'backend', 'docs', 'ops', 'standalone'):
         paths.extend(path for path in (root / directory).rglob('*') if path.is_file() and '__pycache__' not in path.parts)
     files = {}
     for path in paths:
         relative = path.relative_to(root).as_posix()
-        if path.is_symlink() or path.suffix not in {'.py', '.sql', '.json', '.js', '.css', '.ttf', '.txt', '.md', '.yaml', '.toml'} or any(part.startswith('.') for part in Path(relative).parts):
+        if path.is_symlink() or path.suffix not in {'.py', '.sql', '.json', '.js', '.css', '.html', '.ttf', '.txt', '.md', '.yaml', '.toml'} or any(part.startswith('.') for part in Path(relative).parts):
             raise ValueError('Unexpected or sensitive runtime file')
         files[relative] = path.read_bytes()
     for field in ('entry', 'css', 'api'):
@@ -72,6 +83,8 @@ def collect(root):
         raise ValueError('Missing migrations')
     if 'ops/manage.py' not in files or 'dashboard/dist/THIRD_PARTY_NOTICES.txt' not in files:
         raise ValueError('Missing operations tool or third-party notices')
+    if not all(f'standalone/dist/{name}' in files for name in ('index.html', 'app.js', 'app.css', 'THIRD_PARTY_NOTICES.txt')):
+        raise ValueError('Missing standalone runtime or licenses')
     return version, files
 
 

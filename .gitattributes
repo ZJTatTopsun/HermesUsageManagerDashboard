@@ -1,1 +1,3 @@
 scripts/*.sh text eol=lf
+standalone/dist/*.js -whitespace
+standalone/dist/*.LEGAL.txt -whitespace

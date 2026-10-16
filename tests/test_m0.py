@@ -26,7 +26,7 @@ def test_router_loads_without_package_context_like_hermes():
     response = client.get("/api/plugins/hermes-usage-manager/health")
     assert response.status_code == 200
     assert response.json() == {
-        "status": "ok", "plugin": "hermes-usage-manager", "version": "0.5.1",
+        "status": "ok", "plugin": "hermes-usage-manager", "version": "0.6.0",
         "milestone": "M4", "data_source": "live",
         "capabilities": {"storage": "unavailable", "collection": "unavailable", "hermes_runtime": "unverified", "business_api": True},
     }
@@ -58,7 +58,7 @@ def test_manifest_identity_and_prebuilt_assets():
     manifest = json.loads((ROOT / "dashboard/manifest.json").read_text(encoding="utf-8"))
     plugin = yaml.safe_load((ROOT / "plugin.yaml").read_text(encoding="utf-8"))
     assert manifest["name"] == plugin["name"] == "hermes-usage-manager"
-    assert manifest["version"] == plugin["version"] == "0.5.1"
+    assert manifest["version"] == plugin["version"] == "0.6.0"
     assert plugin["provides_hooks"] == ['pre_llm_call', 'post_api_request', 'api_request_error', 'post_tool_call', 'on_session_end']
     assert manifest["tab"]["path"] == "/usage-manager"
     for key in ("entry", "css", "api"):

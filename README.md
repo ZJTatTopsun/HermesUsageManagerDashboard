@@ -1,6 +1,18 @@
-# Hermes Usage Manager — React 插件开发规格书
+# Hermes Usage Manager
 
-M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-final-acceptance.md。M4交付工具及升级/回退记录已提交`3d0ea39`；当前候选0.5.1在现有测试机完成升级、代码回退、恢复新版及可恢复移出/重装验证，原数据库保留。全新服务器安装仍待验收，非正式生产发布。当前验收矩阵见docs/m4-acceptance.md；安装配置与安全边界见docs/deployment.md、docs/configuration.md、docs/security-review.md，旧阶段结果保留为历史。
+## 安装与独立端口（0.6.0）
+
+用户已确认新增独立端口仅显示用量管理平台，不显示Hermes外壳。原生Dashboard/Agent Hooks仍保留；独立入口共用业务API和SQLite，但有自己的React构建与管理员登录，不要求打开9119。
+
+```bash
+hermes plugins install https://github.com/ZJTatTopsun/HermesUsageManagerDashboard.git
+```
+
+安装后需一次性初始化密码并启动独立服务，默认127.0.0.1:9120；不会静默开放公网或修改Gateway。完整命令、已有安装升级、测试IP访问及用户systemd常驻见[独立端口使用说明](docs/standalone.md)。0.6.0目标机验证尚待回传，以下M4验收是0.5.1历史基线，不代表新入口已实机验收。
+
+## 原始开发规格与历史验收
+
+M3已提交`61b7663`并在Hermes v0.21.0基础验收通过。0.5.1已完成现有测试机升级、代码回退、恢复新版及可恢复移出/重装验证，原数据库保留；本地标签v0.5.1指向57cf045，严格交付包已生成。用户免除全新服务器验收（未验证），按调整范围M4完成，非生产部署批准。当前验收矩阵见docs/m4-acceptance.md；安装配置与安全边界见docs/deployment.md、docs/configuration.md、docs/security-review.md，旧阶段结果保留为历史。
 
 > **版本**：V1.0（2026-10-15）  
 > **项目代号**：`hermes-usage-manager`  
@@ -19,7 +31,7 @@ M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-fi
 1. 不修改 Hermes Agent 核心仓库；使用官方 `plugin.yaml` / `__init__.py` 生命周期 Hook、`dashboard/manifest.json`、`dashboard/plugin_api.py` 扩展机制。
 2. 使用 **React + TypeScript + Vite（或经验证可生成 IIFE 的 esbuild）+ Apache ECharts**；用户已选择 React，不使用 Vue 3。
 3. 最终运行在 **Hermes Web Dashboard（`hermes dashboard`）** 内；不是 Hermes Desktop Plugin SDK；不得误用 `@hermes/plugin-sdk`（这是桌面插件 SDK）。
-4. 发布产物必须包含 `dashboard/dist/index.js`（可通过普通 `<script>` 加载的 **IIFE**）以及 CSS；**不得将 React 或 ReactDOM 重复打包**。使用 `window.__HERMES_PLUGIN_SDK__.React` 作为 React 实例；其他宿主组件按可用性使用 SDK。
+4. 原生Dashboard发布产物必须包含 `dashboard/dist/index.js`（普通 `<script>` 加载的 **IIFE**）及CSS，**不得将 React 或 ReactDOM 重复打包到该入口**，继续使用 `window.__HERMES_PLUGIN_SDK__.React`。用户后续明确授权的独立端口入口单独构建React/ReactDOM，不加载原生IIFE或Hermes外壳；两种构建相互隔离。
 5. 使用用户提供的 `references/` 原型图，优先还原布局与交互；样式要求 Material Design 3（浅紫低饱和），不可默认套用宿主暗黑样式或全局覆盖宿主主题。
 6. 插件后端使用 Hermes Dashboard 内置的 FastAPI 插件路由，**不要求单独启动 FastAPI 服务**。本地测试可用独立测试 app 承载同一个 router，但部署生产时不启动它。
 7. 第一版用 **SQLite**，持久化数据写入 Hermes 提供的插件数据位置或显式配置的安全持久化路径；**不得写入可被插件更新覆盖的源码/安装目录**。
@@ -804,6 +816,8 @@ Fixture 至少覆盖：3 个部门、10 个用户、多个 Profile、5 种模型
 **完成**：插件包、CLI 验证、安装升级、配置说明、回滚备份、安全复核、README、兼容记录、真实 Hermes 测试报告。
 
 **退出条件**：新测试服务器无本项目开发环境，也能安装并打开可使用 UI；升级后统计数据仍存在；经过用户确认后才部署正式服务器。
+
+**本次验收范围调整（2026-10-16，用户明确确认）**：免除全新测试服务器安装验收，保留“未验证”而非标记通过。现有测试机升级/代码回退/恢复新版及可恢复卸载重装已验收；源码标签和严格交付包已生成，按调整后的范围M4完成。此决定不授权生产部署，不改变未实测环境的兼容性结论；完整证据见docs/m4-acceptance.md。
 
 ### 工作方式
 
