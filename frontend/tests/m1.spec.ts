@@ -89,7 +89,9 @@ test('session detail retains all eight tool calls with nested expansion', async 
   await page.screenshot({ path: '../build/m1/sessions.png', fullPage: true });
   await page.locator('.hum-row-link').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await page.getByText('工具调用 8 次 · 成功 7 / 失败 1', { exact: true }).click();
+  await page.locator('.hum-tool-group>summary').click();
+  await expect(page.locator('.hum-tool-group>summary')).toContainText('工具调用 8 次');
+  await expect(page.locator('.hum-tool-group>summary')).toContainText('成功 7 / 失败 1');
   await expect(page.locator('.hum-tool-group details')).toHaveCount(8);
   await page.locator('.hum-tool-group details').first().locator('summary').click();
   await expect(page.getByText('模拟结果：虚构商品趋势摘要。', { exact: true }).first()).toBeVisible();

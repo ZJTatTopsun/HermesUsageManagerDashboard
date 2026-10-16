@@ -22,16 +22,40 @@ export function Pagination({ page, total, size, onPage, onSize }: { page: number
   return <div className="hum-pagination"><span>共 {number(total)} 条</span><label>每页 <select aria-label="每页条数" value={size} onChange={(event) => onSize(Number(event.target.value))}>{[20, 50, 100].map((value) => <option key={value}>{value}</option>)}</select></label><button className="hum-outline" aria-label="上一页" disabled={page <= 1} onClick={() => onPage(page - 1)}>‹</button><span className="hum-page-number">{page}/{pages}</span><button className="hum-outline" aria-label="下一页" disabled={page >= pages} onClick={() => onPage(page + 1)}>›</button></div>;
 }
 
-export function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+export function Modal({ title, children, onClose, drawer = false }: { title: string; children: ReactNode; onClose: () => void; drawer?: boolean }) {
   const element = React.useRef<HTMLDialogElement>(null);
   const previousFocus = React.useRef<HTMLElement | null>(null);
   React.useEffect(() => {
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     element.current?.showModal();
-    return () => { element.current?.close(); previousFocus.current?.focus(); };
-  }, []);
-  return <dialog ref={element} className="hum-dialog hum-root" aria-label={title} onCancel={onClose}>
-    <div className="hum-dialog-head"><h2>{title}</h2><button className="hum-icon-button" aria-label="关闭弹窗" onClick={onClose}>×</button></div>{children}
+    const locked: { element: HTMLElement; horizontal: string; vertical: string; horizontalPriority: string; verticalPriority: string; top: number; left: number }[] = [];
+    if (drawer) {
+      let ancestor = element.current?.parentElement ?? null;
+      while (ancestor) {
+        const style = getComputedStyle(ancestor);
+        if (ancestor === document.body || ancestor === document.documentElement || /auto|scroll/.test(`${style.overflowX} ${style.overflowY}`)) {
+          locked.push({ element: ancestor, horizontal: ancestor.style.getPropertyValue('overflow-x'), vertical: ancestor.style.getPropertyValue('overflow-y'), horizontalPriority: ancestor.style.getPropertyPriority('overflow-x'), verticalPriority: ancestor.style.getPropertyPriority('overflow-y'), top: ancestor.scrollTop, left: ancestor.scrollLeft });
+          ancestor.style.setProperty('overflow-x', 'hidden', 'important');
+          ancestor.style.setProperty('overflow-y', 'hidden', 'important');
+        }
+        ancestor = ancestor.parentElement;
+      }
+    }
+    return () => {
+      element.current?.close();
+      for (const saved of locked) {
+        if (saved.horizontal) saved.element.style.setProperty('overflow-x', saved.horizontal, saved.horizontalPriority);
+        else saved.element.style.removeProperty('overflow-x');
+        if (saved.vertical) saved.element.style.setProperty('overflow-y', saved.vertical, saved.verticalPriority);
+        else saved.element.style.removeProperty('overflow-y');
+        saved.element.scrollTop = saved.top;
+        saved.element.scrollLeft = saved.left;
+      }
+      previousFocus.current?.focus({ preventScroll: true });
+    };
+  }, [drawer]);
+  return <dialog ref={element} className={`hum-dialog hum-root${drawer ? ' hum-session-drawer' : ''}`} aria-label={title} onCancel={onClose}>
+    {drawer ? <div className="hum-drawer-top"><button className="hum-drawer-close" aria-label="关闭对话详情" onClick={onClose}><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" /></svg></button></div> : <div className="hum-dialog-head"><h2>{title}</h2><button className="hum-icon-button" aria-label="关闭弹窗" onClick={onClose}>×</button></div>}{children}
   </dialog>;
 }
 

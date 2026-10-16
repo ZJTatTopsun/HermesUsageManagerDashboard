@@ -6,13 +6,15 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Literal
 from uuid import uuid4
+from threading import RLock
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.routing import APIRoute
 
-from . import admin, queries
+from . import admin, queries, quality
+from .adapters.session_content import HermesSessionContentProvider
 from .adapters.hermes import storage_path
 from .db import Store, now
 from .schemas import DepartmentBody, Envelope, MoveBody, PriceBody, SettingsBody, UserBody, get_window
@@ -42,6 +44,7 @@ class SafeRoute(APIRoute):
 
 
 router = APIRouter(route_class=SafeRoute)
+runtime_lock = RLock()
 
 
 @dataclass
@@ -53,11 +56,12 @@ class Runtime:
 
 @lru_cache(maxsize=16)
 def configured_runtime(path):
-    return Runtime(Store(path))
+    return Runtime(Store(path), content_provider=HermesSessionContentProvider())
 
 
 def get_runtime():
-    return configured_runtime(str(storage_path()))
+    with runtime_lock:
+        return configured_runtime(str(storage_path()))
 
 
 def data_source():
@@ -75,14 +79,23 @@ def envelope(runtime, data, window=None, **extra):
 @router.get("/health", response_model=Health)
 def health(request: Request, source: str = Depends(data_source)):
     storage = "unavailable"
+    collection = 'unavailable'
     try:
         runtime = getattr(request.app.state, "hum_runtime", None) or get_runtime()
         with runtime.store.read() as connection:
             connection.execute("SELECT count(*) FROM schema_migrations").fetchone()
+            collection = quality.collection(connection)['status']
         storage = "ready"
     except (RuntimeError, ValueError, sqlite3.Error, OSError):
         pass
-    return {"status": "ok", "plugin": "hermes-usage-manager", "version": "0.3.0", "milestone": "M2", "data_source": source, "capabilities": {"storage": storage, "collection": "unavailable", "hermes_runtime": "unverified", "business_api": True}}
+    return {"status": "ok", "plugin": "hermes-usage-manager", "version": "0.4.4", "milestone": "M3", "data_source": source, "capabilities": {"storage": storage, "collection": collection, "hermes_runtime": "unverified", "business_api": True}}
+
+
+@router.get('/quality', response_model=Envelope)
+def data_quality(window=Depends(get_window), runtime=Depends(get_runtime), principal=Depends(get_principal)):
+    with runtime.store.read() as connection:
+        result = quality.details(connection, window, principal)
+    return envelope(runtime, result, window)
 
 
 @router.get("/filters", response_model=Envelope)
@@ -160,7 +173,7 @@ def request_detail(event_id: str, window=Depends(get_window), runtime=Depends(ge
 
 @router.get("/sessions/{session_id}", response_model=Envelope)
 @router.get("/sessions/{session_id}/timeline", response_model=Envelope)
-def session_detail(request: Request, session_id: str, window=Depends(get_window), runtime=Depends(get_runtime), principal=Depends(get_principal)):
+def session_detail(request: Request, session_id: str, offset: int = Query(0, ge=0, le=100000), limit: int = Query(100, ge=1, le=200), window=Depends(get_window), runtime=Depends(get_runtime), principal=Depends(get_principal)):
     require(principal, "audit")
     with runtime.store.read() as connection:
         condition, values = queries.where(window, principal, "r")
@@ -168,13 +181,32 @@ def session_detail(request: Request, session_id: str, window=Depends(get_window)
         if not exists:
             raise HTTPException(404, "会话不存在或不在可见范围")
         session = dict(connection.execute("SELECT session_key AS id,profile_id AS profile,platform,started_at AS time FROM sessions WHERE session_key=?", (session_id,)).fetchone())
+        owner = dict(connection.execute('SELECT instance_id,profile_id,source_session_id FROM sessions WHERE session_key=?', (session_id,)).fetchone())
     timeline = request.url.path.endswith("/timeline")
-    with runtime.store.transaction() as connection:
-        admin.audit(connection, principal, "sessions.timeline" if timeline else "sessions.detail", session_id, "unavailable" if timeline and runtime.content_provider is None else "ok")
     if timeline:
-        if runtime.content_provider is None:
-            raise HTTPException(503, {"code": "SESSION_CONTENT_UNAVAILABLE", "message": "会话正文源未接入；M2 仅提供元数据"})
-        return envelope(runtime, {"session": session, "messages": runtime.content_provider(session_id)})
+        try:
+            require(principal, 'audit_detail')
+            if runtime.content_provider is None:
+                raise HTTPException(503, {'code': 'SESSION_CONTENT_UNAVAILABLE', 'message': '会话正文源未接入'})
+            if runtime.store.source == 'mock' and callable(runtime.content_provider):
+                messages = runtime.content_provider(session_id)
+                content = {'messages': messages[offset:offset + limit], 'pagination': {'offset': offset, 'limit': limit, 'has_more': len(messages) > offset + limit, 'returned': len(messages[offset:offset + limit])}}
+            else:
+                content = runtime.content_provider.read(owner['instance_id'], owner['profile_id'], owner['source_session_id'], offset, limit)
+        except HTTPException as error:
+            with runtime.store.transaction() as connection:
+                admin.audit(connection, principal, 'sessions.timeline', session_id, 'denied' if error.status_code == 403 else 'unavailable')
+            raise
+        except Exception:
+            with runtime.store.transaction() as connection:
+                admin.audit(connection, principal, 'sessions.timeline', session_id, 'unavailable')
+            raise HTTPException(503, {'code': 'SESSION_CONTENT_UNAVAILABLE', 'message': '会话正文读取失败'}) from None
+        with runtime.store.transaction() as connection:
+            admin.audit(connection, principal, 'sessions.timeline', session_id)
+        session.update({'source_id': owner['source_session_id'], 'title': content.get('title')})
+        return envelope(runtime, {'session': session, **content})
+    with runtime.store.transaction() as connection:
+        admin.audit(connection, principal, 'sessions.detail', session_id)
     return envelope(runtime, session)
 
 

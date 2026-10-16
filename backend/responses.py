@@ -7,7 +7,7 @@ from .schemas import Envelope
 
 class Capabilities(BaseModel):
     storage: Literal['ready', 'unavailable']
-    collection: Literal['unavailable']
+    collection: Literal['unavailable', 'registered', 'observed', 'degraded']
     hermes_runtime: Literal['unverified']
     business_api: bool
 
@@ -15,8 +15,8 @@ class Capabilities(BaseModel):
 class Health(BaseModel):
     status: Literal['ok']
     plugin: Literal['hermes-usage-manager']
-    version: Literal['0.3.0']
-    milestone: Literal['M2']
+    version: Literal['0.4.4']
+    milestone: Literal['M3']
     data_source: Literal['mock', 'live']
     capabilities: Capabilities
 

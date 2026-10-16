@@ -1,6 +1,100 @@
 # Hermes Usage Manager 兼容性记录
 
-## 当前 M2（0.3.0）
+## M3基础验收通过：Hermes v0.21.0 / 插件0.4.4
+
+用户提供cli.py:17804目标计算代码，CLI摘要计数是工具相关消息条数（role=tool或非空tool_calls），一次调用可有助手调用消息和工具结果消息两条，解释本次摘要2与插件MCP1的口径，不要求插件复制该摘要算法。原生doctor、真实主请求/MCP、正文显式开关与审计、Dashboard重启持久化和新UI证据已齐，M3在当前五Hook/单Profile范围基础验收通过。详见m3-final-acceptance.md；后续历史待验证描述以此为准，不代表辅助完整覆盖、实机重复投递、多Profile、生产或M4验收。
+
+## 当前目标版本0.4.4 Doctor已通过
+
+用户回传已安装0.4.4的doctor --ci，runtime discovery/manifest parsing/import/registration全部通过，注册0工具/5 Hook。结合此前真实Dashboard截图，新版本原生加载与UI均有目标宿主证据，覆盖先前“仍为0.4.2/新版doctor待确认”的历史状态。CLI摘要输出已定位cli.py:17845，计数计算代码尚未给出，暂不解释2与1的差异。
+
+## 用户确认新详情界面在真实Hermes中正常
+
+用户更新指引后回传“没问题了”及真实Dashboard两张截图：新版抽屉/灰色遮罩/气泡、已加载消息与源时间显示正常，旧测试记录仍可读；另一个会话503时元数据摘要与列表保留。此项升级为目标宿主UI通过，不再仅为Mock。两图不同会话且权限时序未知，不推断为同一关闭状态；此前明确的关闭权限拒绝证据保持有效。截图无manifest版本，最新直接doctor版本证据仍是0.4.2；CLI摘要2次口径另待核对。
+
+## 当前测试机原生Doctor通过：实际安装0.4.2
+
+用户最新输出显示/home/ubuntu/.hermes/plugins/hermes-usage-manager实际manifest版本0.4.2；关闭采集运行doctor --ci，发现/manifest/导入/注册全部通过，0工具/5 Hook。未安装最新版0.4.4，不能把此前本地Mock UI验收扩大为0.4.4实机验收。下一步使用现有0.4.4包备份更新测试机，保留既有测试DB；无需重做付费模型/MCP调用。原先“当前版本doctor待回传”至此补证为0.4.2，而非0.4.4。
+
+## 实机访问审计及MCP结构化元数据通过
+
+用户回传正文访问审计ok=4、unavailable=9，成功及关闭不可用访问均有留痕。MCP指定会话记录为mcp__sellersprite__trademark_country_list / mcp / sellersprite / success / 280ms / received，类型、Server归属、状态与耗时得到实机证据。工具时间仍为接收时间，不扩大精度保证。CLI摘要2 tool calls口径及当前安装版本doctor仍待补证，不声称实际重复投递或全覆盖通过。
+
+## 用户确认正文关闭权限验收通过
+
+关闭正文临时权限并重启后，新请求为503 SESSION_CONTENT_UNAVAILABLE；对话列表、用量统计、MCP统计正常，用户已回传确认。只读正文显式启用可读、关闭不可读且元数据仍可用的流程已验证。访问审计与MCP结构化归属/状态/耗时尚待只读补证；没有本次doctor输出，不新增目标0.4.4 doctor通过声明。
+
+## M3 收尾验收进行中
+
+用户已确认当前浏览器详情UI无问题（上下文为本地Mock预览），未据此扩大为目标Hermes全部滚动场景通过。收尾清单见m3-acceptance.md：下一项是关闭正文临时权限后的新请求拒绝，同时保留宿主认证与已有统计。审计与MCP状态/归属/耗时、CLI摘要计数差异仍待核对。
+
+## 0.4.4 抽屉遮罩与无分页连续滚动
+
+本轮本地后端90、浏览器32、IIFE3共125项通过，类型/lint/构建/React排除及空白检查通过。实际测试宿主滚动祖先恢复、长内容滚动、连续加载及关闭请求取消；截图为Mock。目标Hermes安装后的滚动行为仍需用户确认。
+
+按用户4条浏览器批注：增加灰色遮罩并锁定html/body及宿主滚动祖先；关闭时恢复原内联overflow值/优先级、滚动位置和焦点。仅白色对话区域滚动，顶部摘要不动，移除上一段/下一段/位置分页栏。界面连续滚动接近底部时有界加载，先前消息保留，跨读取边界的连续工具组合并；加载失败保留已有消息并可重试同一offset，取消时中止请求。
+
+后端公开接口分页契约不变，无需无界读取或批量抓取全会话。每次最多100条，单次查看最多5000条，达到上限明确标注后续内容未加载；防止源分页不前进导致循环请求。已加载数不冒充完整会话总数，权限/只读/脱敏策略不变。0.4.4目标Hermes实机UI仍待用户核对，不标记M3全部完成。
+
+## 0.4.3 对话详情UI还原及0.4.2正文补证
+
+本轮本地测试：后端90、浏览器26、IIFE3共119项通过，类型/lint/构建与React排除检查通过；截图核对含桌面/移动端。不是0.4.3宿主实机验证，正式更新需重启Dashboard并强制刷新前端，按m3-042-testing.md操作。原有辅助Hook、身份/费用未知和oneshot心跳过期状态语义未在本次UI任务中变更。
+
+用户明确反馈0.4.2可看到真实对话记录，确认显式宿主Profile映射解决正文503；关闭开关后的不可读测试尚未回传，不将它标为通过。按最新确认的两张对话详情原型，将居中弹窗改为右侧抽屉、固定摘要及独立滚动区、左右气泡、长文展开、灰底分组和白色工具二级折叠。未改变只读、授权、归属、脱敏与工具结果默认隐藏策略。
+
+授权正文接口提供真实源会话ID与脱敏标题；有效来源timestamp可展示，缺失/无时区/非法值返回未知，绝不使用当前时间或会话时间补齐。标题缺失回退“对话详情”；原始当前段消息数和MCP次数明确区分总数，历史未知不补零。0.4.3目标Hermes实机UI仍待用户确认，不代表M3整体完成。
+
+## 0.4.2 正文归属兼容修复
+
+本地验证：后端82通过、IIFE3通过，类型/lint/构建与React/ReactDOM排除检查通过；本轮未重跑浏览器测试。Starlette/httpx弃用告警保留，实机0.4.2 doctor与正文验证尚未完成。
+
+用户实机确认owner_profile=default且公开有界接口可读2条；插件采用home哈希Profile ID，0.4.1直接比较导致503。0.4.2增加按实例/Profile隔离的显式USAGE_MANAGER_SESSION_PROFILES映射，保留原归属检查与只读/权限/目录白名单，不改核心或既有ID。新增8项映射回归测试；安装配置见m3-042-testing.md。新包实机正文开启/关闭验证仍待回传，不把独立诊断脚本成功视为插件验收通过。
+
+## 2026-10-16 队列诊断与 Dashboard 重启补证
+
+用户在测试机只读查询：collector_runs=2、fresh_runs=0，last_seen=2026-10-16T00:36:41.025126+00:00，last_success=2026-10-16T00:36:41.010339+00:00；dropped=0、invalid=0、context_missing=4，队列done=4，llm_requests=3、tool_calls=1。按当前状态判定，degraded由心跳过期触发；context_missing计数表示已归一化事件缺少external_user_id，不代表该事件未入库。不能把三条模型事件全部归为额外用户请求，或据此证明CLI工具摘要计数完全一致。
+
+用户按指引重启Dashboard后确认记录仍在，Dashboard进程重启持久化检查通过。不是Agent异常中断、机器重启、实机去重或只读正文验收。已知UI将采集进程退出后的心跳过期与采集异常统一显示degraded，尚未修改该状态语义。辅助覆盖与身份归属缺口仍保留。
+
+## 2026-10-16 用户实机 MCP 入库补证（0.4.1）
+
+用户回传卖家精灵trademark_country_list测试会话20261016_083622_14517b：CLI显示MCP调用约0.3秒、模型报告业务返回code=OK，CLI会话摘要为2 tool calls；Dashboard的MCP趋势及工具排行榜各显示1次，采集状态degraded。确认至少一次真实MCP事件采集及展示成功，但尚未核对完整Server归属、结构化状态/耗时，以及CLI摘要与MCP计数差异，不能据此证明无漏采或去重正确。需查看最新质量指标区分心跳过期与无效/丢弃/隔离。
+
+同次CLI出现Hermes tools/mcp_tool.py:6189的RuntimeWarning（MCPServerTask._watch_stdio_children协程未await）。记录宿主告警，不推定其与degraded或计数差异有因果关系，不修改Hermes核心。
+
+## 2026-10-16 用户实机主请求入库补证（0.4.1）
+
+用户回传测试机CLI与Dashboard截图：会话20261016_082227_2455c4成功回复，2条消息、0次工具调用；页面为Live / M3 / observed，当前库Profile心跳1/1，最后入库2026/10/16 08:22:40（Asia/Shanghai）。质量面板显示请求1、待处理0、隔离0、丢弃0、无效0、用量缺失0；身份未知1、缓存未知1、费用未知1。确认一次真实主请求元数据采集及页面读取链路成功，不据此证明所有Token字段语义或定价正确。CLI身份未知与缓存/费用未知保留为未知，辅助Hook仍不可用，不代表用量为零。
+
+此前unavailable由两个终端均未设置采集环境变量暴露；用户按相同DB路径与采集开关重新启动Dashboard及chat后回传上述证据。证据由用户提供，未远程访问。MCP调用、实机去重、只读会话正文与重启持久化仍待验证，M3不标记整体完成。以下“真实请求待验证”是本次补证前的历史状态。
+
+## v0.21.0 实机预检差异修复（插件0.4.1）
+
+实机Doctor补证（用户回传）：对临时解压的0.4.1包运行 `USAGE_MANAGER_COLLECTION=0 hermes plugins doctor --ci <staging-path>`，输出 `OK: runtime discovery, manifest parsing, import, and registration passed`，注册数为0工具、5 Hook。这证明目标v0.21.0上的发现/manifest/导入/注册已通过；未替换现有插件、未启用采集，不能据此标记真实请求、MCP或会话正文验证通过。
+
+用户终端输出确认：Hermes v0.21.0 / Python3.11.15 / FastAPI0.133.1，Asia/Shanghai可用；缺少post_auxiliary_call。实际解释器为`/home/ubuntu/.hermes/hermes-agent/venv/bin/python3`。SessionDB支持read_only；get_messages支持limit/offset/latest，但没有include_ancestors。证据来自用户实机签名，不以较新源码覆盖该事实。
+
+修复：此测试包的manifest与实际注册统一为五个受支持Hook，不声明或注册不存在的辅助事件；不升级Hermes、不改核心、不开新网站。/quality返回hook_coverage=partial及unavailable_hooks，标题说明明确辅助用量未采集、不代表为零。辅助事件normalizer保留单元测试，但本包不会收集该通道，也不动态多注册manifest未声明的Hook。
+
+正文Provider先检查公开方法签名，要求有界limit/offset/latest；较新接口明确传include_ancestors=False，用户旧接口省略该不存在的参数。不是捕获TypeError后盲试，也不回退到私有SQL或无界读取。若返回行明确属于别的session则拒绝。只读、来源白名单、管理员权限和默认关闭均保持不变。
+
+新增5个兼容用例，后端74通过。该输出只证明接口存在性，不证明实际Hook字段、Token语义、MCP身份或真实正文可读；doctor和真实对话仍待用户验证。使用新包hermes-usage-manager-0.4.1-m3.zip，不继续安装旧0.4.0包。0.4.0以下记录保留为历史。
+
+## 当前 M3（0.4.0，本地实现，真实验收未完成）
+
+M2已按用户要求建立Git基线提交815b340，未push。M3适配已在本地实现，但**未满足真实对话/MCP退出条件**。本机无Hermes、未连接用户服务器、未覆盖M0安装；下述M2/M1/M0结果是历史，不是M3兼容证明。
+
+2026-10-15再次读取[官方原生插件文档](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins)及[Hook文档](https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks)，并对照固定源码commit525dbcad8d744710a43d01eb7366500e46eacbf4的真实调用点。具体文件/字段、未知值与降级策略见m3-design.md。
+
+六个注册事件为pre_llm_call、post_api_request、api_request_error、post_tool_call、post_auxiliary_call、on_session_end。v0.21.0是否全支持仍需doctor和签名检查，不能用最新文档替代实测；尤其仍不建议在用户CLI执行不存在的plugins validate。
+
+重要差异：usage是Hermes CanonicalUsage而非任意Provider SDK格式，input_tokens不应直接当总输入；raw_usage已被剥离、默认零不能证明原字段presence。post_tool_call没有可信源时间与显式Server字段，使用received标记和当前作用域真实registry归属。MCP猜名字、缓存缺失补零、重复加MoA摘要均被禁止。
+
+会话Provider仅在独立授权+绝对home白名单下，调用已检查的SessionDB(read_only=True)/get_messages；不碰私有表，旧签名/关闭时503。正文管理员权限与普通审计元数据权限分离；请求成功/拒绝/不可用均留审计。
+
+本地69后端+24浏览器+3 IIFE测试通过，六回调三次Mock重播通过，M2到M3迁移与独立解压加载通过。目标认证、隔离宿主、Profile、Linux/ACL、一次真实对话与MCP及正文读取仍未验证。测试命令见m3-testing.md；完整结果见m3-report.md。只有真实验收补证后才能关闭M3，当前未开始M4。
+
+## M2 历史记录（0.3.0）
 
 本机仍没有安装/运行 Hermes。M2 在 Windows 上用同一生产 router 的 SQLite Mock Host 验证；没有连接用户服务器。M0 v0.21.0 的截图确认不外推为 M2 的运行时兼容证明。当前 health=0.3.0/M2；storage 由实际数据库检查决定，collection=unavailable、hermes_runtime=unverified。
 

@@ -33,7 +33,8 @@ def rows(connection, sql, values=()):
 
 
 def coverage(connection):
-    return {"scope": "configured_database", "profile_total": connection.execute("SELECT count(*) FROM profiles WHERE enabled=1").fetchone()[0], "profile_reporting": connection.execute("SELECT count(DISTINCT instance_id||':'||profile_id) FROM llm_requests").fetchone()[0], "collection": "unavailable"}
+    from .quality import collection
+    return {"scope": "configured_database", "profile_total": connection.execute("SELECT count(*) FROM profiles WHERE enabled=1").fetchone()[0], "profile_reporting": connection.execute("SELECT count(*) FROM (SELECT instance_id,profile_id FROM llm_requests UNION SELECT instance_id,profile_id FROM tool_calls)").fetchone()[0], "collection": collection(connection)['status']}
 
 
 def analytics(connection, window, principal):
