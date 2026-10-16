@@ -145,4 +145,4 @@ USAGE_MANAGER_COLLECTION=0 hermes plugins doctor --ci "$RESTORE/hermes-usage-man
 
 回传：新服务器Hermes/Python版本、离线校验/doctor、无Node安装的Live健康与页面、升级前后inspect-db汇总、回滚/卸载/重装结果及异常。不要发送DB、正文、Key或完整配置。
 
-目前只具备本地隔离文件/DB工作流、包独立导入/权限拒绝和Mock UI回归证据；没有全新Hermes服务器验收、真实升级/回滚/卸载链路，也没有正式tag。M4仍进行中；生产部署必须在测试完成后再获得用户单独确认。
+现有测试机已完成0.4.4→0.5.1→0.4.4→0.5.1代码升级/回退/恢复，原库保留、快照恢复到新目录通过；可恢复移出/重装及Live页面正常获用户确认。不是CLI remove或数据库原位回滚验收。全新无开发环境服务器与正式tag仍待验证，见m4-acceptance.md。M4仍进行中；生产部署必须在测试完成后再获得用户单独确认。

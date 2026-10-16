@@ -1,6 +1,6 @@
 # Hermes Usage Manager — React 插件开发规格书
 
-M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-final-acceptance.md。M4当前候选0.5.1修复0.5.0快照检查后恢复误拒绝，现有测试机续验先看docs/m4-051-recovery.md，不继续旧包升级。全新服务器与真实升级/回滚/卸载尚未验收，非生产发布。安装配置与安全边界见docs/deployment.md、docs/configuration.md、docs/security-review.md，旧阶段结果保留为历史。
+M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-final-acceptance.md。M4交付工具及升级/回退记录已提交`3d0ea39`；当前候选0.5.1在现有测试机完成升级、代码回退、恢复新版及可恢复移出/重装验证，原数据库保留。全新服务器安装仍待验收，非正式生产发布。当前验收矩阵见docs/m4-acceptance.md；安装配置与安全边界见docs/deployment.md、docs/configuration.md、docs/security-review.md，旧阶段结果保留为历史。
 
 > **版本**：V1.0（2026-10-15）  
 > **项目代号**：`hermes-usage-manager`  
@@ -10,7 +10,7 @@ M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-fi
 
 > **v0.21.0兼容预检修正（0.4.1）**：按用户实机输出，当前包仅声明/注册五个可用Hook，辅助用量明确未采集；只读会话按旧签名有界读取。未升级Hermes、未覆盖旧插件，doctor和真实事件尚待验证；优先见 [兼容记录](docs/compatibility.md) 和 [新测试步骤](docs/m3-testing.md)。下列0.4.0结果为历史。
 
-> **当前实现（M3 / 0.4.0，本地实现，真实验收待完成）**：M2 已提交为 `815b340`；M3已实现六个原生Hook适配、有界后台采集与恢复队列、数据质量、只读会话适配及隐私控制。采集需显式启用，正文默认关闭；没有在本机安装Hermes、没有连接或更新远端。M0截图不代表M3兼容证明；M3真实对话/MCP退出条件仍未满足。见 [开发运行](docs/development.md)、[M3设计](docs/m3-design.md)、[M3测试命令](docs/m3-testing.md)、[阶段报告](docs/m3-report.md)、[兼容性](docs/compatibility.md)。未开始M4。
+> **历史实现记录（M3 / 0.4.0，不代表当前状态）**：当时实现六Hook适配并仅完成本地验证；后续按目标v0.21.0调整为五个可用Hook，辅助用量明确未知。当前M3基础验收已通过，M4进展以上方摘要、[验收矩阵](docs/m4-acceptance.md)及[兼容记录](docs/compatibility.md)为准。设计与早期过程保留于 [M3设计](docs/m3-design.md)、[阶段报告](docs/m3-report.md)。
 
 ## 0. 给 Codex 的执行原则（必读）
 
