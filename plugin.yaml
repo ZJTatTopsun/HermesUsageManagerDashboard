@@ -1,8 +1,8 @@
 name: hermes-usage-manager
-version: 0.4.4
+version: 0.5.1
 manifest_version: 2
 api_version: 1
-description: Hermes Usage Manager M3 metadata Hooks and read-only session adapter
+description: Hermes Usage Manager M4 metadata Hooks and read-only session adapter
 provides_hooks:
   - pre_llm_call
   - post_api_request

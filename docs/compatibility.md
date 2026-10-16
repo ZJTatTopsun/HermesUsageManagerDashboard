@@ -1,5 +1,55 @@
 # Hermes Usage Manager 兼容性记录
 
+## 现有测试机0.5.1恢复完成，升级回退闭环通过
+
+用户回传恢复副本与安装目录doctor均0.5.1、0工具/5 Hook，enable成功；原DB仍Live、五步迁移，计数3/1/2/1/0/21，新增访问审计保留。确认Live · M4、数据正常且Gateway恢复。实机0.4.4→0.5.1→0.4.4→0.5.1代码链路通过，快照检查后恢复到新目录已通过；未覆盖原DB，不声称数据库原位回滚已验收。当前运行0.5.1。可恢复卸载/重装、全新服务器及正式发布门禁仍待完成，M4不标记全部完成。
+
+## 旧版Live回退验收通过
+
+用户确认0.4.4回退后Live · M3及各统计/列表正常、旧数据保留，正文关闭503符合预期。现有测试机代码回退的doctor/数据保留/Live UI链路已通过；DB恢复仅验证新目录副本，不声称覆盖原库。下一步恢复0.5.1代码并检查新版页面，Gateway在此之前保持停止；M4新服务器等退出项仍待验。
+
+## 实际代码回退0.4.4通过
+
+用户回传两个快照restore成功，旧恢复副本和实际安装目录doctor均0.4.4、0工具/5 Hook，启用成功；原DB五步迁移、计数3/1/2/1/0/20不变。仅代码回退，不恢复旧18条审计DB。新版代码保留/home/ubuntu/hum-m4-rollback.CRcF8l/plugin-0.5.1；旧版页面、恢复新版及新服务器等退出项仍待验。
+
+## 实际回滚前当前数据已备份
+
+用户确认所有已列Gateway停止；当前代码/DB快照/home/ubuntu/hum-m4-rollback.CRcF8l/snapshot成功，DELETE/format=1，Live五步迁移、计数3/1/2/1/0/20。比旧快照新增2条访问审计，后续仅代码回退，不把旧DB覆盖当前数据。实际回退及旧版Live仍待回传。
+
+## 0.5.1 实际Live页面通过
+
+用户确认Live · M4，概览、用量明细、MCP、对话列表保留旧数据无接口错误，正文关闭后503 SESSION_CONTENT_UNAVAILABLE符合预期。Gateway已重新启动，原快照之后的数据不能假定不变；回滚前必须重新停写并备份当前0.5.1代码/DB。此项补齐实际升级UI/API证据，不代表实际回滚、卸载或新服务器通过，也不证明公网网络安全配置已审查。
+
+## 0.5.1 实际安装与启用通过
+
+用户回传安装目录原生doctor确认0.5.1、0工具/5 Hook，plugins list确认enabled0.5.1。停机代码替换后原DB为Live、0001–0005，计数3/1/2/1/0/18保持不变。未授予内置工具覆盖权限，不影响本插件所需契约；不额外授权该能力。当前已具备实际安装升级证据，新版Dashboard/Live API及实际回滚、卸载/重装、新服务器验收仍待执行。
+
+## 0.5.1 目标暂存及快照恢复检查通过
+
+用户回传/home/ubuntu/hum-m4-051.t6rUvM中的新版暂存doctor通过（0.5.1、0工具/5 Hook），新快照DELETE/format=1经inspect-db后restore成功，恢复旧代码doctor通过（0.4.4、0工具/5 Hook）。原库/快照/恢复副本均Live、五步迁移、计数3/1/2/1/0/18一致。此前“0.5.1恢复尚未通过”已获补证；安装目录仍未替换，实际新版Live/回滚与新服务器验收不因此标绿。历史0.5.0失败证据保留。
+
+## 0.5.1修复候选：实机恢复检查尚未通过
+
+修复后本地完整pytest123、Playwright32、IIFE3共158项通过，类型/ESLint通过；覆盖snapshot→inspect快照→restore实际顺序。目标0.5.1原生Doctor及恢复检查尚无回传，不标记实际升级/回滚通过。
+
+0.5.0实际恢复副本检查返回ValueError并在代码替换前停止，原0.4.4/原DB未被该脚本替换。已本地复现旧WAL快照经inspect-db生成sidecar导致严格库存拒绝恢复；0.5.1只对新备份封存DELETE模式，保留原库WAL和旧快照，新增明确错误码及顺序回归。不能仅凭旧通用报错确定实机唯一原因。请使用m4-051-recovery.md重新在新目录暂存、备份、恢复检查，不继续旧0.5.0升级命令。以下快照汇总通过为历史证据，不代表恢复/升级通过；M4仍待实机与新服务器验收。
+
+## M4实机快照通过，升级尚待执行
+
+用户回传Live原库与快照汇总一致：五步迁移、模型3、工具1、会话2、Profile1、价格0、访问审计18；快照成功保存/home/ubuntu/hum-m4-upgrade.0rwyvF/snapshot。基于SQLite backup的真实快照已完成，不等于已将新版本安装或已回滚原库。下一步恢复到新目录检查，再替换旧插件代码并doctor，保持原DB路径不变。
+
+## 用户实机0.5.0暂存Doctor通过
+
+zip/ops.py校验OK，外置工具verify/stage均成功。用户实际暂存/home/ubuntu/hum-m4-stage.mtpXSY/staged/hermes-usage-manager的doctor --ci输出manifest0.5.0、发现/manifest/导入/注册通过，0工具/5 Hook。确认当前候选的目标原生加载契约，不等于已安装升级、Live业务API或真实回滚通过。下一步仅做旧版本代码和外部DB一致性快照，现有0.4.4不先覆盖。
+
+## M4进行中：0.5.0交付候选
+
+本轮本地pytest120、浏览器32、IIFE3共155项通过，类型/lint/构建/React排除和Bash语法检查通过。M4交付30项覆盖无Node独立工具、包可复现/损坏拒绝、SQLite WAL快照/恢复、文件/DB升级回滚仿真；不能据此把真实新服务器、0.5.0 doctor或CLI remove标绿。M4仍进行中，下一项只暂存校验，不覆盖现有0.4.4。详细证据见m4-report.md。
+
+M3按用户要求提交61b7663后继续M4。0.5.0保留目标v0.21.0已验证五Hook/0001–0005 schema与身份/正文边界，仅新增交付校验/备份/暂存/恢复等运维工具与M4标识。当前没有0.5.0实机doctor或新服务器证据，M3的0.4.4实测不自动继承为新版全部通过。候选包记录source_dirty=true和未建立tag，不伪造正式发布；正式发布入口有--require-tag门禁。
+
+重新核对[官方原生插件文档](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins)：Web Dashboard与Desktop扩展是不同表面，doctor使用实际发现/manifest/注册契约；最新文档存在validate但目标用户CLI没有该子命令，继续以目标doctor为准。没有修改Hermes核心或升级宿主依赖。详细步骤、安全限制与本地/实机证据等级见deployment.md、security-review.md及m4-report.md。
+
 ## M3基础验收通过：Hermes v0.21.0 / 插件0.4.4
 
 用户提供cli.py:17804目标计算代码，CLI摘要计数是工具相关消息条数（role=tool或非空tool_calls），一次调用可有助手调用消息和工具结果消息两条，解释本次摘要2与插件MCP1的口径，不要求插件复制该摘要算法。原生doctor、真实主请求/MCP、正文显式开关与审计、Dashboard重启持久化和新UI证据已齐，M3在当前五Hook/单Profile范围基础验收通过。详见m3-final-acceptance.md；后续历史待验证描述以此为准，不代表辅助完整覆盖、实机重复投递、多Profile、生产或M4验收。

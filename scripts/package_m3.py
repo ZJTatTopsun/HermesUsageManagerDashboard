@@ -1,4 +1,4 @@
-from package_m2 import main
+from package_release import main
 
 if __name__ == '__main__':
-    main('0.4.4', 'm3')
+    main()

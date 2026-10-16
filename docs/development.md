@@ -1,8 +1,8 @@
-# M3 本地开发（0.4.1）
+# M4 本地开发（0.5.1 候选）
 
-当前包面向用户v0.21.0，声明/注册五个基础Hook；辅助调用Hook缺失，质量面板明确标记覆盖不完整。会话方法兼容用户提供的旧签名；旧六Hook实现说明见历史记录，实机doctor/真实事件仍待验证。
+M3已按用户要求提交61b7663；0.4.4目标实机基础验收报告见m3-final-acceptance.md。当前0.5.1添加交付校验与运维工具，仍声明五个基础Hook；目标0.5.1真实安装/升级/回滚及全新服务器未验收，不沿用0.4.4结果冒充通过。
 
-当前在M2基础上实现原生Hook采集与会话读取适配，真实Hermes验收尚未完成；未更新远端。产品契约见 `m2-design.md`、`m3-design.md`，结果见 `m3-report.md`。六个观察Hook的callback通过本地源码形状重播，不等于已运行真实Hermes。
+产品契约见m2-design.md、m3-design.md；M3历史结果见m3-report.md，当前交付见deployment.md、configuration.md和security-review.md。本文只操作本地Mock，不连接远端。
 
 ## 启动与验证
 
@@ -32,7 +32,7 @@ pnpm run dev
 python -m pytest -q
 python scripts/replay_fixture.py --repetitions 3
 python scripts/replay_hooks.py
-python scripts/package_m3.py
+python scripts/package_release.py
 ```
 
 当前环境没有全局 npm；可用 `C:\Users\it\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd`，也可直接调用 `frontend/node_modules/.bin/tsc.cmd` 等已安装工具。
@@ -48,10 +48,10 @@ python scripts/package_m3.py
 
 ## 原生运行
 
-测试发行包 `build/hermes-usage-manager-0.4.1-m3.zip` 包含原生声明、Dashboard router、backend与5步SQL迁移、IIFE/CSS/字体/许可，无Mock或React/ReactDOM运行时。运行不需要Node。安装测试须按 `m3-testing.md`，不自动上传、覆盖旧插件或连接生产。
+候选包build/hermes-usage-manager-0.5.1.zip包含原生声明、Dashboard router、backend与5步SQL迁移、IIFE/CSS/字体/许可和stdlib运维工具，无Mock或React/ReactDOM运行时。另生成.sha256和-ops.py。运行不需要Node，安装测试按deployment.md；旧package_m3.py仅为当前严格打包器兼容入口，不再生成旧M3版本包。
 
 真实 DB 使用 `USAGE_MANAGER_DB_PATH`，否则尝试 Hermes 官方源码 helper。它与开发专用 HUM_MOCK_DB_PATH 不同。默认业务认证拒绝访问；受控测试才设置 `USAGE_MANAGER_TRUST_DASHBOARD_ADMIN=1`。缺少宿主内部认证函数时503，不降级。Hermes 进程环境须具备 FastAPI 与 tzdata；本仓库 `.venv` 不等于远端 Hermes 解释器。
 
-storage ready仅证明SQLite可用。`USAGE_MANAGER_COLLECTION=1`才启动元数据采集；不启用则六个回调均无副作用。共享本机DB可设置相同的外部USAGE_MANAGER_DB_PATH和稳定USAGE_MANAGER_INSTANCE_ID，Profile身份仍独立，不能把多个Profile强制设成同一个USAGE_MANAGER_PROFILE_ID。`USAGE_MANAGER_EXPECTED_PROFILES`可显式列出需要监测的Profile，否则只知道库内已见Profile，不能声称完整覆盖。
+storage ready仅证明SQLite可用。USAGE_MANAGER_COLLECTION=1才启动元数据采集；不启用则五个回调均无采集副作用。共享本机DB可设置相同外部USAGE_MANAGER_DB_PATH和稳定USAGE_MANAGER_INSTANCE_ID，Profile身份仍独立，不能把多个Profile强制设成同一个USAGE_MANAGER_PROFILE_ID。预期Profile清单未设置时不能声称全量覆盖。
 
 `USAGE_MANAGER_SESSION_CONTENT=1`另行启用只读正文，必须设置明确的 `USAGE_MANAGER_SESSION_HOMES` 来源白名单；默认拒绝。工具结果再由 `USAGE_MANAGER_TOOL_CONTENT=1`单独控制，参数不读取。管理员正文权限独立于审计员元数据权限。所有选项、隐私限制与真实验收步骤见 `m3-design.md`、`m3-testing.md`。

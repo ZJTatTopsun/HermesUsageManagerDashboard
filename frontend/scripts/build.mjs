@@ -1,5 +1,6 @@
 import { build } from 'esbuild';
-import { mkdir, writeFile, rename, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, rename, readFile, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
@@ -42,3 +43,14 @@ for (const name of ['echarts', 'zrender', 'tslib', 'zod']) {
 notices.push(`Google Material Symbols Outlined / Apache-2.0\n\n${await readFile('src/assets/material-symbols.LICENSE.txt', 'utf8')}`);
 await writeFile('../dashboard/dist/THIRD_PARTY_NOTICES.txt', notices.join('\n\n--------------------\n\n'));
 await import('./check-bundle.mjs');
+const integrity = { inputs: {}, outputs: {} };
+for (const path of [...Object.keys(result.metafile.inputs), 'package.json', 'scripts/build.mjs', 'scripts/check-bundle.mjs', '../plugin.yaml', '../dashboard/manifest.json']) {
+  integrity.inputs[path] = createHash('sha256').update(await readFile(path)).digest('hex');
+}
+for (const path of await readdir('../dashboard/dist', { recursive: true })) {
+  const fullPath = `../dashboard/dist/${path}`;
+  try { integrity.outputs[fullPath] = createHash('sha256').update(await readFile(fullPath)).digest('hex'); }
+  catch (error) { if (error.code !== 'EISDIR') throw error; }
+}
+integrity.outputs['../build/plugin-metafile.json'] = createHash('sha256').update(await readFile('../build/plugin-metafile.json')).digest('hex');
+await writeFile('../build/release-inputs.json', JSON.stringify(integrity, null, 2));

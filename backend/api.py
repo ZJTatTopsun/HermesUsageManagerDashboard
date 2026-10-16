@@ -88,7 +88,7 @@ def health(request: Request, source: str = Depends(data_source)):
         storage = "ready"
     except (RuntimeError, ValueError, sqlite3.Error, OSError):
         pass
-    return {"status": "ok", "plugin": "hermes-usage-manager", "version": "0.4.4", "milestone": "M3", "data_source": source, "capabilities": {"storage": storage, "collection": collection, "hermes_runtime": "unverified", "business_api": True}}
+    return {"status": "ok", "plugin": "hermes-usage-manager", "version": "0.5.1", "milestone": "M4", "data_source": source, "capabilities": {"storage": storage, "collection": collection, "hermes_runtime": "unverified", "business_api": True}}
 
 
 @router.get('/quality', response_model=Envelope)

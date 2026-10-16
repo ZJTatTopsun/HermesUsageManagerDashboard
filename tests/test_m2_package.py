@@ -11,8 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_archive_is_native_self_contained_and_loads_without_checkout(tmp_path, monkeypatch):
-    subprocess.run([sys.executable, str(ROOT / 'scripts/package_m3.py')], cwd=ROOT, check=True, capture_output=True, text=True)
-    archive_path = ROOT / 'build/hermes-usage-manager-0.4.4-m3.zip'
+    subprocess.run([sys.executable, str(ROOT / 'scripts/package_release.py')], cwd=ROOT, check=True, capture_output=True, text=True)
+    archive_path = ROOT / 'build/hermes-usage-manager-0.5.1.zip'
     with ZipFile(archive_path) as archive:
         names = archive.namelist()
         assert 'hermes-usage-manager/backend/migrations/0004_membership_intervals.sql' in names

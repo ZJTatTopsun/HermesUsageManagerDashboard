@@ -1,6 +1,6 @@
 # Hermes Usage Manager — React 插件开发规格书
 
-当前M3测试包0.4.4已在Hermes v0.21.0五Hook、单测试Profile范围基础验收通过：真实请求/MCP、正文开关/审计、重启持久化及原型UI已确认。完整报告与未测项见docs/m3-final-acceptance.md；辅助覆盖、未知身份/费用等限制仍保留。M4未开始。测试机操作见docs/m3-042-testing.md，下文旧版本记录为历史。
+M3已提交`61b7663`并在Hermes v0.21.0基础验收通过，报告见docs/m3-final-acceptance.md。M4当前候选0.5.1修复0.5.0快照检查后恢复误拒绝，现有测试机续验先看docs/m4-051-recovery.md，不继续旧包升级。全新服务器与真实升级/回滚/卸载尚未验收，非生产发布。安装配置与安全边界见docs/deployment.md、docs/configuration.md、docs/security-review.md，旧阶段结果保留为历史。
 
 > **版本**：V1.0（2026-10-15）  
 > **项目代号**：`hermes-usage-manager`  
@@ -830,27 +830,26 @@ Milestone:
 ### 14.1 发布包要求
 
 - 仓库必须含已编译 `dashboard/dist/index.js`、`style.css`，以及 Python 后端与插件声明。
-- `scripts/package-release.sh` 生成发行压缩包并执行检查：manifest 与注册名一致、文件存在、版本一致、IIFE 构建完成、无 React bundle、SQL migrations 存在。
+- `bash scripts/package-release.sh` 在构建机检查类型/lint/构建/IIFE，再调用`python scripts/package_release.py`生成zip、SHA256与无Node运维工具；校验版本、Hook声明、构建输入/输出指纹、无React bundle、迁移与运行文件库存。Windows步骤见docs/development.md。
 - 代码 Git tag 与 manifest 版本一致；CHANGELOG 写明兼容性、安全影响和迁移。
 
 ### 14.2 测试 Hermes 安装与核对
 
 ```bash
-# 在隔离测试 Hermes 机器执行；仓库地址为占位示例
+# 在隔离测试 Hermes 机器执行；先按docs/deployment.md校验/暂存候选包
 hermes --version
-hermes plugins install YOUR_ORG/hermes-usage-manager --no-enable
+hermes plugins doctor --help
+# 验证暂存路径通过后才安装，不直接覆盖旧插件
 hermes plugins list
+hermes plugins doctor --ci hermes-usage-manager
 hermes plugins enable hermes-usage-manager
-hermes plugins doctor hermes-usage-manager
-
-# 若 Hermes CLI/版本支持：
-hermes plugins validate ~/.hermes/plugins/hermes-usage-manager
 
 # 启动 Dashboard（测试机；默认 loopback）
-hermes dashboard --no-open
+hermes dashboard --host 127.0.0.1 --port 9119 --no-open
 ```
 
 - 需要重启/重新加载 Gateway 以确认 Hooks 实际生效（视已安装版本的动态重载能力而定）。
+- 已确认目标v0.21.0没有`plugins validate`，使用`doctor --ci`，不以最新官网新增命令覆盖目标实测契约。当前仓库未发布远端地址，不提供无法执行的owner/repo安装占位命令。
 - **插件 UI 新增/修改后**可访问 `GET /api/dashboard/plugins/rescan`；**插件 API 新增或改动后需重启 Dashboard** 才能重新挂载。
 - 使用授权的代理连接 `127.0.0.1:9119`；网络暴露必须按官方身份认证和网络隔离配置处理。
 - 测试一条模型回复、一个 MCP 工具调用，核对请求、工具、会话、费用口径；验证状态页能区分 Live/Mock。
